@@ -109,6 +109,8 @@ ers :: EmpowerRXStats(EL el);
 
 cqm :: EmpowerCQM(EL el);
 
+eqoss :: EmpowerQoSScheduler (EL el, DEBUG $DEBUG);
+
 wifi_cl :: Classifier(0/08%0c,  // data
                       0/00%0c); // mgt
 
@@ -170,8 +172,9 @@ switch_data[$IDX]
   IDX=$(($IDX+1))
 done
 
-echo """kt :: KernelTap(10.0.0.1/24, BURST 500, DEV_NAME $VIRTUAL_IFNAME)
-  -> wifi_encap :: EmpowerWifiEncap(EL el, DEBUG $DEBUG)
+echo """kt :: KernelTap(10.0.0.1/24, BURST 10000, DEV_NAME $VIRTUAL_IFNAME)
+  -> miph
+  -> eqoss
   -> switch_data;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
@@ -187,6 +190,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
                                 CQM cqm,
+				EQOSS eqoss,
                                 DEBUG $DEBUG)
     -> ctrl;
 
@@ -194,7 +198,9 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
     -> wifi_decap :: EmpowerWifiDecap(EL el, DEBUG $DEBUG)
     -> kt;
 
-  wifi_decap [1] -> wifi_encap;
+  miph :: MarkIPHeader(14);
+
+  wifi_decap [1] -> miph;
 
   wifi_cl [1]
     -> mgt_cl :: Classifier(0/40%f0,  // probe req
