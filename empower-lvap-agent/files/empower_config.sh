@@ -173,9 +173,7 @@ switch_data[$IDX]
 done
 
 echo """kt :: KernelTap(10.0.0.1/24, BURST 10000, DEV_NAME $VIRTUAL_IFNAME)
-  -> miph
-  -> eqosm
-  -> switch_data;
+  -> eqosm;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
     -> el :: EmpowerLVAPManager(WTP $WTP,
@@ -198,9 +196,12 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
     -> wifi_decap :: EmpowerWifiDecap(EL el, DEBUG $DEBUG)
     -> kt;
 
-  miph :: MarkIPHeader(14);
+  wifi_decap [1] 
+    -> MarkIPHeader(14)
+    -> eqosm;
 
-  wifi_decap [1] -> miph;
+  eqosm
+  -> switch_data;
 
   wifi_cl [1]
     -> mgt_cl :: Classifier(0/40%f0,  // probe req
