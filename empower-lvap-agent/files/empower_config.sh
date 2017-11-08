@@ -109,7 +109,7 @@ ers :: EmpowerRXStats(EL el);
 
 cqm :: EmpowerCQM(EL el);
 
-eqoss :: EmpowerQoSScheduler (EL el, DEBUG $DEBUG);
+eqosm :: EmpowerQoSManager (EL el, DEBUG $DEBUG);
 
 wifi_cl :: Classifier(0/08%0c,  // data
                       0/00%0c); // mgt
@@ -174,7 +174,7 @@ done
 
 echo """kt :: KernelTap(10.0.0.1/24, BURST 10000, DEV_NAME $VIRTUAL_IFNAME)
   -> miph
-  -> eqoss
+  -> eqosm
   -> switch_data;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
@@ -190,7 +190,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
                                 CQM cqm,
-				EQOSS eqoss,
+				EQOSM eqosm,
                                 DEBUG $DEBUG)
     -> ctrl;
 
