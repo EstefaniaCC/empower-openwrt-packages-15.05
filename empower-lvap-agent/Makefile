@@ -68,7 +68,7 @@ define Build/Compile
                 -E EtherEncap -E WifiEncap -E WifiDecap -E UDPIPEncap \
                 -E EmpowerIgmpMembership -E EmpowerMulticastTable \
 		-E CheckIPHeader -E InfiniteSource -E RadiotapEncap -E IPEncap \
-		-E EmpowerQoSScheduler \
+		-E EmpowerQoSManager \
 	);
 	$(call Build/Install/Default, MINDRIVER=$(PKG_NAME) install)
 endef
