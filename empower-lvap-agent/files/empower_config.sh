@@ -119,12 +119,12 @@ switch_data :: PaintSwitch();
 """
 
 RCS=""
-QOSM=""
+EQOSM=""
 IDX=0
 for IFNAME in $IFNAMES; do
 
   RCS="$RCS rc_$IDX/rate_control"
-  EQOSM="$QOSM eqosm_$IDX"
+  EQOSM="$EQOSM eqosm_$IDX"
   CHANNEL=$($IW dev $IFNAME info | sed -n 's/^.*channel \([0-9]*\) (\([0-9]*\) MHz).*/\1/p')
   NOHT=$($IW dev $IFNAME info | sed -n 's/^.*channel \([0-9]*\) (\([0-9]*\) MHz), width: \([0-9]*\) MHz \((no HT)\),.*/\4/p')
 
@@ -191,7 +191,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
                                 CQM cqm,
-                                EQOSM \"$QOSM\",
+                                EQOSM \"$EQOSM\",
                                 DEBUG $DEBUG)
     -> ctrl;
 
