@@ -191,7 +191,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
                                 CQM cqm,
-                                EQOSM qosm,
+                                EQOSM \"$QOSM\",
                                 DEBUG $DEBUG)
     -> ctrl;
 
