@@ -109,8 +109,6 @@ ers :: EmpowerRXStats(EL el);
 
 cqm :: EmpowerCQM(EL el);
 
-eqosm :: EmpowerQoSManager (EL el, DEBUG $DEBUG);
-
 wifi_cl :: Classifier(0/08%0c,  // data
                       0/00%0c); // mgt
 
@@ -121,10 +119,12 @@ switch_data :: PaintSwitch();
 """
 
 RCS=""
+QOSM=""
 IDX=0
 for IFNAME in $IFNAMES; do
 
   RCS="$RCS rc_$IDX/rate_control"
+  EQOSM="$QOSM eqosm_$IDX"
   CHANNEL=$($IW dev $IFNAME info | sed -n 's/^.*channel \([0-9]*\) (\([0-9]*\) MHz).*/\1/p')
   NOHT=$($IW dev $IFNAME info | sed -n 's/^.*channel \([0-9]*\) (\([0-9]*\) MHz), width: \([0-9]*\) MHz \((no HT)\),.*/\4/p')
 
@@ -144,6 +144,8 @@ for IFNAME in $IFNAMES; do
 rates_$IDX :: TransmissionPolicies(DEFAULT rates_default_$IDX);
 
 rc_$IDX :: RateControl(rates_$IDX);
+
+eqosm_$IDX :: EmpowerQoSManager (EL el, DEBUG $DEBUG);
 
 FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
   -> RadiotapDecap()
@@ -165,15 +167,16 @@ switch_mngt[$IDX]
   -> [0] sched_$IDX;
 
 switch_data[$IDX]
-  -> Queue()
+  -> MarkIPHeader(14)
+  -> eqosm_$IDX
   -> [1] sched_$IDX;
 """
 
   IDX=$(($IDX+1))
 done
 
-echo """kt :: KernelTap(10.0.0.1/24, BURST 10000, DEV_NAME $VIRTUAL_IFNAME)
-  -> eqosm;
+echo """kt :: KernelTap(10.0.0.1/24, BURST 500, DEV_NAME $VIRTUAL_IFNAME)
+  -> switch_data;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
     -> el :: EmpowerLVAPManager(WTP $WTP,
@@ -188,7 +191,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
                                 CQM cqm,
-				EQOSM eqosm,
+                                EQOSM qosm,
                                 DEBUG $DEBUG)
     -> ctrl;
 
@@ -196,12 +199,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
     -> wifi_decap :: EmpowerWifiDecap(EL el, DEBUG $DEBUG)
     -> kt;
 
-  wifi_decap [1] 
-    -> MarkIPHeader(14)
-    -> eqosm;
-
-  eqosm
-  -> switch_data;
+  wifi_decap [1] -> switch_data;
 
   wifi_cl [1]
     -> mgt_cl :: Classifier(0/40%f0,  // probe req
