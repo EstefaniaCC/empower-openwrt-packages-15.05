@@ -116,6 +116,8 @@ ers -> wifi_cl;
 
 switch_mngt :: PaintSwitch();
 switch_data :: PaintSwitch();
+
+ifaces_tee :: Tee(2);
 """
 
 RCS=""
@@ -166,8 +168,8 @@ switch_mngt[$IDX]
   -> Queue(50)
   -> [0] sched_$IDX;
 
-switch_data[$IDX]
-  -> MarkIPHeader(14)
+ifaces_tee[$IDX]
+  -> switch_data[$IDX]
   -> eqosm_$IDX
   -> [1] sched_$IDX;
 """
@@ -176,7 +178,8 @@ switch_data[$IDX]
 done
 
 echo """kt :: KernelTap(10.0.0.1/24, BURST 500, DEV_NAME $VIRTUAL_IFNAME)
-  -> switch_data;
+  -> MarkIPHeader(14)
+  -> ifaces_tee;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
     -> el :: EmpowerLVAPManager(WTP $WTP,
