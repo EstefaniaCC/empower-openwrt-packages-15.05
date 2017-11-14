@@ -169,7 +169,7 @@ switch_mngt[$IDX]
   -> [0] sched_$IDX;
 
 ifaces_tee[$IDX]
-  -> switch_data[$IDX]
+  -> Paint($IDX)
   -> eqosm_$IDX
   -> [1] sched_$IDX;
 """
