@@ -90,6 +90,8 @@ done
 
 WTP=$(/sbin/ifconfig $BRIDGE 2>&1 | sed -n 's/^.*HWaddr \([0-9A-Za-z\:]*\).*/\1/p')
 
+NUM_IFACES=$(echo $IFNAMES | wc -w)
+
 echo """elementclass RateControl {
   \$rates|
 
@@ -114,14 +116,17 @@ wifi_cl :: Classifier(0/08%0c,  // data
 
 ers -> wifi_cl;
 
+tee :: EmpowerTee($NUM_IFACES)
+
 switch_mngt :: PaintSwitch();
-switch_data :: PaintSwitch();
 """
 
 RCS=""
+EQMS=""
 IDX=0
 for IFNAME in $IFNAMES; do
 
+  EQMS="$EQMS eqm_$IDX"
   RCS="$RCS rc_$IDX/rate_control"
   CHANNEL=$($IW dev $IFNAME info | sed -n 's/^.*channel \([0-9]*\) (\([0-9]*\) MHz).*/\1/p')
   NOHT=$($IW dev $IFNAME info | sed -n 's/^.*channel \([0-9]*\) (\([0-9]*\) MHz), width: \([0-9]*\) MHz \((no HT)\),.*/\4/p')
@@ -142,6 +147,7 @@ for IFNAME in $IFNAMES; do
 rates_$IDX :: TransmissionPolicies(DEFAULT rates_default_$IDX);
 
 rc_$IDX :: RateControl(rates_$IDX);
+eqm_$IDX :: EmpowerQOSManager(EL el, RC rc_$IDX/rate_control, DEBUG $DEBUG);
 
 FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
   -> RadiotapDecap()
@@ -162,8 +168,10 @@ switch_mngt[$IDX]
   -> Queue(50)
   -> [0] sched_$IDX;
 
-switch_data[$IDX]
-  -> Queue()
+tee[$IDX]
+  -> MarkIPHeader()
+  -> Paint($IDX)
+  -> eqm_$IDX 
   -> [1] sched_$IDX;
 """
 
@@ -171,8 +179,7 @@ switch_data[$IDX]
 done
 
 echo """kt :: KernelTap(10.0.0.1/24, BURST 500, DEV_NAME $VIRTUAL_IFNAME)
-  -> wifi_encap :: EmpowerWifiEncap(EL el, DEBUG $DEBUG)
-  -> switch_data;
+  -> tee; 
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
     -> el :: EmpowerLVAPManager(WTP $WTP,
@@ -187,6 +194,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
                                 CQM cqm,
+                                EQMS \"$EQMS\",
                                 DEBUG $DEBUG)
     -> ctrl;
 
@@ -194,7 +202,7 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
     -> wifi_decap :: EmpowerWifiDecap(EL el, DEBUG $DEBUG)
     -> kt;
 
-  wifi_decap [1] -> wifi_encap;
+  wifi_decap [1] -> tee;
 
   wifi_cl [1]
     -> mgt_cl :: Classifier(0/40%f0,  // probe req
