@@ -66,7 +66,7 @@ define Build/Compile
                 -e SetTXRate -e SetTXRateHT -E ToDump -E RatedSource \
                 -E EtherEncap -E WifiEncap -E WifiDecap -E UDPIPEncap \
                 -E EmpowerIgmpMembership -E EmpowerMulticastTable \
-                -E EmpowerQOSManager -E EmpowerTee \
+                -E MarkIPHeader -E EmpowerQOSManager -E EmpowerTee \
 	);
 	$(call Build/Install/Default, MINDRIVER=$(PKG_NAME) install)
 endef
