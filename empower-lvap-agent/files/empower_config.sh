@@ -149,7 +149,7 @@ rc_$IDX :: RateControl(rates_$IDX);
 
 eqosm_$IDX :: EmpowerQoSManager (EL el, DEBUG $DEBUG);
 
-FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
+FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 100000)
   -> RadiotapDecap()
   -> FilterPhyErr()
   -> rc_$IDX
