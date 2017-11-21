@@ -116,7 +116,7 @@ wifi_cl :: Classifier(0/08%0c,  // data
 
 ers -> wifi_cl;
 
-tee :: EmpowerTee($NUM_IFACES)
+tee :: EmpowerTee($NUM_IFACES, EL el);
 
 switch_mngt :: PaintSwitch();
 """
@@ -169,7 +169,7 @@ switch_mngt[$IDX]
   -> [0] sched_$IDX;
 
 tee[$IDX]
-  -> MarkIPHeader()
+  -> MarkIPHeader(14)
   -> Paint($IDX)
   -> eqm_$IDX 
   -> [1] sched_$IDX;
