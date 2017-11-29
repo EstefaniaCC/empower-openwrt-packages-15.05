@@ -148,9 +148,7 @@ for IFNAME in $IFNAMES; do
 rates_$IDX :: TransmissionPolicies(DEFAULT rates_default_$IDX);
 
 rc_$IDX :: RateControl(rates_$IDX);
-eqm_$IDX :: EmpowerQOSManager(EL el, RC rc_$IDX/rate_control, DEBUG $DEBUG);
-
-eqosm_$IDX :: EmpowerQoSManager (EL el, DEBUG $DEBUG);
+eqm_$IDX :: EmpowerQOSManager(EL el, RC rc_$IDX/rate_control, IFACE_ID $IDX, DEBUG $DEBUG);
 
 FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
   -> RadiotapDecap()
