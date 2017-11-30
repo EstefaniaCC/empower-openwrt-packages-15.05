@@ -147,7 +147,7 @@ for IFNAME in $IFNAMES; do
 rates_$IDX :: TransmissionPolicies(DEFAULT rates_default_$IDX);
 
 rc_$IDX :: RateControl(rates_$IDX);
-eqm_$IDX :: EmpowerQOSManager(EL el, RC rc_$IDX/rate_control, DEBUG $DEBUG);
+eqm_$IDX :: EmpowerQOSManager(EL el, RC rc_$IDX/rate_control, IFACE_ID $IDX, DEBUG $DEBUG);
 
 FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
   -> RadiotapDecap()
@@ -171,7 +171,7 @@ switch_mngt[$IDX]
 tee[$IDX]
   -> MarkIPHeader()
   -> Paint($IDX)
-  -> eqm_$IDX 
+  -> eqm_$IDX
   -> [1] sched_$IDX;
 """
 
@@ -179,7 +179,7 @@ tee[$IDX]
 done
 
 echo """kt :: KernelTap(10.0.0.1/24, BURST 500, DEV_NAME $VIRTUAL_IFNAME)
-  -> tee; 
+  -> tee;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
     -> el :: EmpowerLVAPManager(WTP $WTP,
