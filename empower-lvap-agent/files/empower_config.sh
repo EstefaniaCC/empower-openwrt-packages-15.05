@@ -116,7 +116,7 @@ wifi_cl :: Classifier(0/08%0c,  // data
 
 ers -> wifi_cl;
 
-tee :: EmpowerTee($NUM_IFACES)
+tee :: EmpowerTee($NUM_IFACES, EL el);
 
 switch_mngt :: PaintSwitch();
 
@@ -170,7 +170,7 @@ switch_mngt[$IDX]
   -> [0] sched_$IDX;
 
 tee[$IDX]
-  -> MarkIPHeader()
+  -> MarkIPHeader(14)
   -> Paint($IDX)
   -> eqm_$IDX
   -> [1] sched_$IDX;
@@ -180,7 +180,7 @@ tee[$IDX]
 done
 
 echo """kt :: KernelTap(10.0.0.1/24, BURST 500, DEV_NAME $VIRTUAL_IFNAME)
-  -> tee; 
+  -> tee;
 
 ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNECT_CALL el.reconnect)
     -> el :: EmpowerLVAPManager(WTP $WTP,
