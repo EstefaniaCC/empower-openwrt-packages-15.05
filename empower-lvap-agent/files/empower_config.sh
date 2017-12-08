@@ -109,8 +109,6 @@ ControlSocket(\"TCP\", 7777);
 
 ers :: EmpowerRXStats(EL el);
 
-cqm :: EmpowerCQM(EL el);
-
 wifi_cl :: Classifier(0/08%0c,  // data
                       0/00%0c); // mgt
 
@@ -155,7 +153,6 @@ FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
   -> rc_$IDX
   -> WifiDupeFilter()
   -> Paint($IDX)
-  -> cqm
   -> ers;
 
 sched_$IDX :: PrioSched()
@@ -193,7 +190,6 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 PERIOD 5000,
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
-                                CQM cqm,
                                 EQMS \"$EQMS\",
                                 DEBUG $DEBUG)
     -> ctrl;
