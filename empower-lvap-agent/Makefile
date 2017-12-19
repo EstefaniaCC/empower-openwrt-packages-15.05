@@ -8,9 +8,9 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=empower-lvap-agent
-PKG_VERSION:=20171130
+PKG_VERSION:=20171216
 PKG_RELEASE:=1
-PKG_REV:=044c6edbe8a5527c89be19c282b2cb6d8ebc6ba7
+PKG_REV:=651536853f2cfd2584edc1526835ff291928d39c
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://github.com/5g-empower/empower-lvap-agent.git
@@ -66,7 +66,7 @@ define Build/Compile
                 -e SetTXRate -e SetTXRateHT -E ToDump -E RatedSource \
                 -E EtherEncap -E WifiEncap -E WifiDecap -E UDPIPEncap \
                 -E EmpowerIgmpMembership -E EmpowerMulticastTable \
-                -E MarkIPHeader -E EmpowerQOSManager -E EmpowerTee \
+                -E MarkIPHeader -E EmpowerQOSManager -E EmpowerTee -E EmpowerRegmon \
 	);
 	$(call Build/Install/Default, MINDRIVER=$(PKG_NAME) install)
 endef

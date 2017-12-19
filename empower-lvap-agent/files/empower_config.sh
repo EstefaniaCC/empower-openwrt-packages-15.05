@@ -109,8 +109,6 @@ ControlSocket(\"TCP\", 7777);
 
 ers :: EmpowerRXStats(EL el);
 
-cqm :: EmpowerCQM(EL el);
-
 wifi_cl :: Classifier(0/08%0c,  // data
                       0/00%0c); // mgt
 
@@ -120,12 +118,17 @@ tee :: EmpowerTee($NUM_IFACES, EL el);
 
 switch_mngt :: PaintSwitch();
 
+<<<<<<< HEAD
 """
+=======
+REGS=""
+>>>>>>> upstream/master
 RCS=""
 EQMS=""
 IDX=0
 for IFNAME in $IFNAMES; do
 
+  REGS="$REGS reg_$IDX"
   EQMS="$EQMS eqm_$IDX"
   RCS="$RCS rc_$IDX/rate_control"
   EQOSM="$EQOSM eqosm_$IDX"
@@ -144,7 +147,8 @@ for IFNAME in $IFNAMES; do
     HT_RATES="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"
   fi
 
-  echo """rates_default_$IDX :: TransmissionPolicy(MCS \"$RATES\", HT_MCS \"$HT_RATES\");
+  echo """reg_$IDX :: EmpowerRegmon(EL el, IFACE_ID $IDX, DEBUGFS /sys/kernel/debug/ieee80211/phy$IDX/regmon);
+rates_default_$IDX :: TransmissionPolicy(MCS \"$RATES\", HT_MCS \"$HT_RATES\");
 rates_$IDX :: TransmissionPolicies(DEFAULT rates_default_$IDX);
 
 rc_$IDX :: RateControl(rates_$IDX);
@@ -156,7 +160,6 @@ FromDevice($IFNAME, PROMISC false, OUTBOUND true, SNIFFER false, BURST 1000)
   -> rc_$IDX
   -> WifiDupeFilter()
   -> Paint($IDX)
-  -> cqm
   -> ers;
 
 sched_$IDX :: PrioSched()
@@ -194,8 +197,8 @@ ctrl :: Socket(TCP, $MASTER_IP, $MASTER_PORT, CLIENT true, VERBOSE true, RECONNE
                                 PERIOD 5000,
                                 DEBUGFS \"$DEBUGFS\",
                                 ERS ers,
-                                CQM cqm,
                                 EQMS \"$EQMS\",
+                                REGMONS \"$REGS\",
                                 DEBUG $DEBUG)
     -> ctrl;
 
